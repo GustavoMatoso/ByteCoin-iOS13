@@ -10,6 +10,7 @@ import Foundation
 
 protocol CoinManagerDelegate{
     func didFailWithError(error: Error)
+    func updateBTCValue(value: CoinModel)
 }
 
 
@@ -40,9 +41,34 @@ struct CoinManager {
             if error != nil{
                 delegate?.didFailWithError(error: error!)
             }
+            if let safeData = data{
+                if let btc = parseJSON(safeData){
+                        //delegate?.didUpdateWeather(self,weather: weather)
+                    delegate?.updateBTCValue(value: btc)
+                }
+            }
         }
-        
+        task.resume()
+            
     }
     
+    func parseJSON(_ coinData: Data)-> CoinModel?{
+        
+        let decoder = JSONDecoder()
+        do{
+            let decodedData = try decoder.decode(CoinData.self, from: coinData)
+            let chosenCurrency = decodedData.asset_id_quote
+            let btcValue = decodedData.rate
+            
+            let btc = CoinModel(chosenCurrency: chosenCurrency, btcValue: btcValue)
+            return btc
+            
+        } catch {
+            delegate?.didFailWithError(error: error)
+            return nil
+        }
+        
+        
+    }
     
 }

@@ -15,15 +15,21 @@ class ViewController: UIViewController{
     @IBOutlet weak var currencyLabel: UILabel!
     
     @IBOutlet weak var pickerView: UIPickerView!
-    let coinManager = CoinManager()
+    var coinManager = CoinManager()
+    
+    
     
 
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        coinManager.delegate = self
         pickerView.delegate = self
         
         pickerView.selectRow(coinManager.currencyArray.firstIndex(of: "USD")!, inComponent: 0, animated: false)
+        coinManager.getURL(currency: "USD")
+        
             }
 }
 //MARK: - UIPickerViewDataSource
@@ -54,8 +60,34 @@ extension ViewController: UIPickerViewDelegate{
         
         currencyLabel.text = selectedCurrency
         
-        print("Currency selected: \(selectedCurrency)")
+//        print("Currency selected: \(selectedCurrency)")
         
         coinManager.getURL(currency: selectedCurrency)
     }
+}
+
+extension ViewController: CoinManagerDelegate{
+    func updateBTCValue(value: CoinModel) {
+        DispatchQueue.main.async {
+            
+            let numberFormatter = NumberFormatter()
+            numberFormatter.groupingSeparator = "."
+            numberFormatter.numberStyle = .decimal
+            let btcValueString = numberFormatter.string(from: NSNumber(value: value.btcValue)) ?? "0"
+            
+            self.valueLabel.text = btcValueString
+        }
+    }
+    
+    func didFailWithError(error: Error) {
+        print(error)
+    }
+    
+   
+    
+    
+    
+    
+    
+    
 }
